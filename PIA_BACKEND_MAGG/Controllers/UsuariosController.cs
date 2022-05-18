@@ -116,13 +116,14 @@ namespace PIA_BACKEND_MAGG.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //[HttpPost("haceradmin")]
-        //public async Task<IActionResult> post(string username)
-        //{
-        //    var usuario = await userManager.FindByNameAsync(username);
-        //    await userManager.AddClaimAsync(usuario, new Claim("administrador", "true"));
-        //    return Ok();
-        //}
+        [HttpPost("hacerAdmin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> post(string username)
+        {
+            var usuario = await userManager.FindByNameAsync(username);
+            await userManager.AddClaimAsync(usuario, new Claim("administrador", "true"));
+            return Ok();
+        }
 
     }
 }
