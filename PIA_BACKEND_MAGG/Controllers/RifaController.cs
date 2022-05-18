@@ -21,18 +21,15 @@ namespace PIA_BACKEND_MAGG.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly UserManager<IdentityUser> userManager;
-        private readonly IConfiguration _config;
         private readonly IMapper mapper;
 
         public RifaController(
             ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
-            IConfiguration _config,
             IMapper mapper)
         {
             this.context = context;
             this.userManager = userManager;
-            this._config = _config;
             this.mapper = mapper;
         }
 
@@ -62,6 +59,15 @@ namespace PIA_BACKEND_MAGG.Controllers
         public async Task<ActionResult<List<GetRifaDTO>>> GetById(int idRifa)
         {
             var rifas = await context.rifas.Where(state => state.Id == idRifa).ToListAsync();
+
+            return mapper.Map<List<GetRifaDTO>>(rifas);
+
+        }
+
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<List<GetRifaDTO>>> GetByNombre(string nombre)
+        {
+            var rifas = await context.rifas.Where(x => x.Nombre.Contains(nombre)).ToListAsync();
 
             return mapper.Map<List<GetRifaDTO>>(rifas);
 
@@ -99,41 +105,38 @@ namespace PIA_BACKEND_MAGG.Controllers
             }else numero.estado = "Disponible";
 
             return numero;
-
         }
+
 
         [HttpGet("{idRifa:int}/elegirUnGanador")]
         [Authorize(Policy = "Administrador")]
         public async Task<ActionResult<GanadorDTO>> GetGanador(int idRifa)
         {
+            var rifa = await context.rifas.Where(rifa => rifa.Id == idRifa).FirstOrDefaultAsync();
+
+            if (rifa == null) { return BadRequest("La rifa no existe"); }
+            if(rifa.finalizada) { return BadRequest("La rifa ha finalizado"); }
+
             var participaciones = await context.participanteRifa.Where(x => x.rifaId == idRifa).ToListAsync();
 
-            if (participaciones == null) return BadRequest("Aun no hay ninguna participacion para esta rifa!");
+            if (participaciones.Count == 0) return BadRequest("Aun no hay ninguna participacion para esta rifa!");
             
-            var premios = await context.premios.Where(x => x.rifaId == idRifa).ToListAsync();
+            var premios = await context.premios.Where(x => x.rifaId == idRifa && x.disponible==true).ToListAsync();
 
-            if (premios == null) return BadRequest("Aun no hay ningun premio para esta rifa!");
-
-            Boolean premiosAgotados = true;
-
-            foreach(var premio in premios)
-            {
-                if (premio.disponible) premiosAgotados = false;
-            }
-
-            if (premiosAgotados) { return BadRequest("Esta rifa ha terminado"); }
+            if (premios.Count == 0) return BadRequest("No hay ningun premio para esta rifa");
 
             Random rnd = new Random();
 
             var ganadorRnd = participaciones.OrderBy(x => rnd.Next()).Take(1).FirstOrDefault();
-            var premioGanado = premios.OrderBy(x => rnd.Next()).Take(1).FirstOrDefault();
+            var premioGanado = premios.Last();
 
             var userGanador = await context.participantes.Where(x => x.Id == ganadorRnd.participanteId).FirstOrDefaultAsync();
 
             var ganadorDTO = new GanadorDTO {
                 numero = ganadorRnd.NumeroLoteria, 
                 participante = userGanador.UserName,
-                premio = premioGanado.Nombre
+                premio = premioGanado.Nombre,
+                orden = premioGanado.orden
             };
 
             ganadorRnd.ganador = true;
@@ -143,6 +146,15 @@ namespace PIA_BACKEND_MAGG.Controllers
             context.premios.Update(premioGanado);
 
             await context.SaveChangesAsync();
+
+            premios = await context.premios.Where(x => x.rifaId == idRifa && x.disponible == true).ToListAsync();
+
+            if (premios.Count == 0) {
+                //rifa = await context.rifas.Where(rifa => rifa.Id == idRifa).FirstOrDefaultAsync();
+                rifa.finalizada = true;
+                context.rifas.Update(rifa);
+                await context.SaveChangesAsync();
+            }
 
             return ganadorDTO;
         }
@@ -173,7 +185,7 @@ namespace PIA_BACKEND_MAGG.Controllers
             context.Add(rifa);
             await context.SaveChangesAsync();
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost("{idRifa:int}/participar/{numero:int}")]
@@ -191,11 +203,16 @@ namespace PIA_BACKEND_MAGG.Controllers
             // Obtiene la rifa por id
             var rifa = await context.rifas.Where(rifa => rifa.Id == idRifa).FirstOrDefaultAsync();
 
+            if (rifa == null) return BadRequest("La rifa no existe");
+            if (rifa.finalizada) return BadRequest("La rifa ya ha sido finalizada");
+
             // Obtiene el usuario por username
             var userNameClaim = HttpContext.User.Claims.Where(claim => claim.Type == "UserName").FirstOrDefault();
             var userName = userNameClaim.Value;
 
             var user = await userManager.FindByNameAsync(userName);
+
+            if(user.Id.Equals(rifa.userId)) { return BadRequest("No puede participar en su propia rifa");  }
             
             //obtiene el participante por userId
             var participante = await context.participantes.Where(part => part.IdUser == user.Id).FirstOrDefaultAsync();

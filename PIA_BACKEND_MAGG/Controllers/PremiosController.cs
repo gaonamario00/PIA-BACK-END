@@ -54,7 +54,7 @@ namespace PIA_BACKEND_MAGG.Controllers
             premioDTO.disponible = true;
             premioDTO.rifa = rifa;
 
-            var premiosRifa = await context.premios.Where(premio => premio.rifaId == premio.rifaId).ToListAsync();
+            var premiosRifa = await context.premios.Where(premio => premio.rifaId == premioDTO.rifaId).ToListAsync();
             premioDTO.orden = premiosRifa.Count + 1;
 
             var premio = mapper.Map<Premio>(premioDTO);
