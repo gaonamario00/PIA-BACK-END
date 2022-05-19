@@ -1,16 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PIA_BACKEND_MAGG.DTOs;
 using PIA_BACKEND_MAGG.DTOs.ParticipanteRifaDTO;
 using PIA_BACKEND_MAGG.DTOs.RifasDTO;
 using PIA_BACKEND_MAGG.Entidades;
 using PIA_BACKEND_MAGG.Utilidades;
-using System.Net;
-using System.Security.Claims;
 
 namespace PIA_BACKEND_MAGG.Controllers
 {
@@ -49,6 +47,7 @@ namespace PIA_BACKEND_MAGG.Controllers
         {
             var rifas = await context.rifas.Where(state => state.finalizada == false).ToListAsync();
 
+            if (rifas.Count == 0) BadRequest("No hay rifas actualmente");
 
             return mapper.Map<List<GetRifaDTO>>(rifas);
 
@@ -60,6 +59,8 @@ namespace PIA_BACKEND_MAGG.Controllers
         {
             var rifas = await context.rifas.Where(state => state.Id == idRifa).ToListAsync();
 
+            if (rifas.Count == 0) return BadRequest("La rifa ingresada no existe");
+
             return mapper.Map<List<GetRifaDTO>>(rifas);
 
         }
@@ -69,6 +70,8 @@ namespace PIA_BACKEND_MAGG.Controllers
         {
             var rifas = await context.rifas.Where(x => x.Nombre.Contains(nombre)).ToListAsync();
 
+            if (rifas.Count == 0) return BadRequest("La rifa ingresada no existe");
+
             return mapper.Map<List<GetRifaDTO>>(rifas);
 
         }
@@ -76,6 +79,11 @@ namespace PIA_BACKEND_MAGG.Controllers
         [HttpGet("{idRifa}/NumerosDisponibles")]
         public async Task<ActionResult<List<int>>> GetNumerosDisponiblesById(int idRifa)
         {
+
+            var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
+
+            if(!rifaExiste) return BadRequest("La rifa ingresada no existe");
+
             var participacionesPorRifa = await context.participanteRifa.Where(part => part.rifaId == idRifa).ToListAsync();
             
             if (participacionesPorRifa == null) { return BadRequest("No se encontraron participaciones"); }
@@ -95,6 +103,16 @@ namespace PIA_BACKEND_MAGG.Controllers
         [HttpGet("{idRifa}/{numeroLoteria}")]
         public async Task<ActionResult<NumeroDTO>> GetNumeroByRifaId(int idRifa, int numeroLoteria)
         {
+
+            if (numeroLoteria < 1 || numeroLoteria > 54)
+            {
+                return BadRequest("El numero de loteria debe de ser de 1 hasta 54");
+            }
+
+            var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
+
+            if (!rifaExiste) return BadRequest("La rifa ingresada no existe");
+
             var number = await context.participanteRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numeroLoteria);
 
             var numero = new NumeroDTO { number = numeroLoteria, estado = null };
@@ -213,18 +231,39 @@ namespace PIA_BACKEND_MAGG.Controllers
             var user = await userManager.FindByNameAsync(userName);
 
             if(user.Id.Equals(rifa.userId)) { return BadRequest("No puede participar en su propia rifa");  }
-            
+
+            var participanteExiste = await context.participantes.AnyAsync(x => x.IdUser == user.Id);
+
+            if(!participanteExiste)
+            {
+                var nuevoParticipante = new ParticipanteDTO
+                {
+                    UserName = userName,
+                    IdUser = user.Id,
+                    user = user
+                };
+
+                var Newparticipante = mapper.Map<Participantes>(nuevoParticipante);
+
+                context.participantes.Add(Newparticipante);
+                await context.SaveChangesAsync();
+
+            }
+
             //obtiene el participante por userId
             var participante = await context.participantes.Where(part => part.IdUser == user.Id).FirstOrDefaultAsync();
 
             //crea la participacion
-            var participacionDTO = new participanteRifaDTO { 
-                participanteId = participante.Id, 
+            var participacionDTO = new participanteRifaDTO
+            {
+                participanteId = participante.Id,
                 participante = participante,
                 rifaId = rifa.Id,
                 rifa = rifa,
-                NumeroLoteria = numero
+                NumeroLoteria = numero, 
+                ganador = false
             };
+
 
             var participacion = mapper.Map<ParticipanteRifa>(participacionDTO);
 

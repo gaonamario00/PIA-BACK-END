@@ -14,6 +14,7 @@ namespace PIA_BACKEND_MAGG.Utilidades
             //Usuario
             CreateMap<UsuarioCreacionDTO, Participantes>();
             CreateMap<UsuarioCreacionDTO, loginUsuarioDTO>();
+            CreateMap<ParticipanteDTO, Participantes>();
 
             //Rifas
             CreateMap<RifaCreacionDTO, RifaDTO>();

@@ -55,14 +55,11 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             if (result.Succeeded)
             {
-                var user = mapper.Map<Participantes>(nuevoUSer);
-                user.IdUser = userId;
+                //var user = mapper.Map<Participantes>(nuevoUSer);
+                //user.IdUser = userId;
 
-                context.Add(user);
-                await context.SaveChangesAsync();
-
-                // TO DO
-                // OBTENER INFORMACION DEL USUARIO EN OTRO ENDPOINTS
+                //context.Add(user);
+                //await context.SaveChangesAsync();
 
                 var token = await Generate(mapper.Map<loginUsuarioDTO>(nuevoUSer));
                 return Ok("Token: "+token);

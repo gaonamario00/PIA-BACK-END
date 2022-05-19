@@ -222,11 +222,11 @@ namespace PIA_BACKEND_MAGG.Migrations
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.ParticipanteRifa", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
 
                     b.Property<int>("NumeroLoteria")
                         .HasColumnType("int");
@@ -237,13 +237,13 @@ namespace PIA_BACKEND_MAGG.Migrations
                     b.Property<int>("participanteId")
                         .HasColumnType("int");
 
-                    b.Property<int>("premioId")
+                    b.Property<int?>("premioId")
                         .HasColumnType("int");
 
                     b.Property<int>("rifaId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
                     b.HasIndex("participanteId");
 
@@ -398,13 +398,15 @@ namespace PIA_BACKEND_MAGG.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", null)
+                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", "rifa")
                         .WithMany("participaciones")
                         .HasForeignKey("rifaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("participante");
+
+                    b.Navigation("rifa");
                 });
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Participantes", b =>

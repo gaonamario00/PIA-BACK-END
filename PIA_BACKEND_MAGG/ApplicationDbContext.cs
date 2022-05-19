@@ -10,6 +10,14 @@ namespace PIA_BACKEND_MAGG
         {
 
         }
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    base.OnModelCreating(modelBuilder);
+
+        //    modelBuilder.Entity<ParticipanteRifa>()
+        //        .HasKey(part => new { part.participanteId, part.rifaId });
+
+        //}
 
         public DbSet<Participantes> participantes { get; set; }
         public DbSet<Rifa> rifas { get; set; }

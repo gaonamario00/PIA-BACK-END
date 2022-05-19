@@ -200,17 +200,17 @@ namespace PIA_BACKEND_MAGG.Migrations
                 name: "participanteRifa",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     participanteId = table.Column<int>(type: "int", nullable: false),
                     rifaId = table.Column<int>(type: "int", nullable: false),
                     NumeroLoteria = table.Column<int>(type: "int", nullable: false),
                     ganador = table.Column<bool>(type: "bit", nullable: false),
-                    premioId = table.Column<int>(type: "int", nullable: false)
+                    premioId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_participanteRifa", x => x.Id);
+                    table.PrimaryKey("PK_participanteRifa", x => x.id);
                     table.ForeignKey(
                         name: "FK_participanteRifa_participantes_participanteId",
                         column: x => x.participanteId,
