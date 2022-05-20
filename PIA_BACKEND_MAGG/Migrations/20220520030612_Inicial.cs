@@ -197,7 +197,28 @@ namespace PIA_BACKEND_MAGG.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "participanteRifa",
+                name: "TarjetasGanadoras",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    nombreRifa = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    userId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    premioId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TarjetasGanadoras", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_TarjetasGanadoras_AspNetUsers_userId",
+                        column: x => x.userId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "participantesRifa",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -205,20 +226,19 @@ namespace PIA_BACKEND_MAGG.Migrations
                     participanteId = table.Column<int>(type: "int", nullable: false),
                     rifaId = table.Column<int>(type: "int", nullable: false),
                     NumeroLoteria = table.Column<int>(type: "int", nullable: false),
-                    ganador = table.Column<bool>(type: "bit", nullable: false),
-                    premioId = table.Column<int>(type: "int", nullable: true)
+                    ganador = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_participanteRifa", x => x.id);
+                    table.PrimaryKey("PK_participantesRifa", x => x.id);
                     table.ForeignKey(
-                        name: "FK_participanteRifa_participantes_participanteId",
+                        name: "FK_participantesRifa_participantes_participanteId",
                         column: x => x.participanteId,
                         principalTable: "participantes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_participanteRifa_rifas_rifaId",
+                        name: "FK_participantesRifa_rifas_rifaId",
                         column: x => x.rifaId,
                         principalTable: "rifas",
                         principalColumn: "Id",
@@ -232,7 +252,7 @@ namespace PIA_BACKEND_MAGG.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    descripcion = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     disponible = table.Column<bool>(type: "bit", nullable: false),
                     rifaId = table.Column<int>(type: "int", nullable: false),
                     orden = table.Column<int>(type: "int", nullable: false)
@@ -288,19 +308,19 @@ namespace PIA_BACKEND_MAGG.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_participanteRifa_participanteId",
-                table: "participanteRifa",
-                column: "participanteId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_participanteRifa_rifaId",
-                table: "participanteRifa",
-                column: "rifaId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_participantes_userId",
                 table: "participantes",
                 column: "userId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_participantesRifa_participanteId",
+                table: "participantesRifa",
+                column: "participanteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_participantesRifa_rifaId",
+                table: "participantesRifa",
+                column: "rifaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_premios_rifaId",
@@ -310,6 +330,11 @@ namespace PIA_BACKEND_MAGG.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_rifas_userId",
                 table: "rifas",
+                column: "userId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TarjetasGanadoras_userId",
+                table: "TarjetasGanadoras",
                 column: "userId");
         }
 
@@ -331,10 +356,13 @@ namespace PIA_BACKEND_MAGG.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "participanteRifa");
+                name: "participantesRifa");
 
             migrationBuilder.DropTable(
                 name: "premios");
+
+            migrationBuilder.DropTable(
+                name: "TarjetasGanadoras");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -1,10 +1,9 @@
-﻿using PIA_BACKEND_MAGG.Entidades;
-using PIA_BACKEND_MAGG.Validaciones;
+﻿using PIA_BACKEND_MAGG.Validaciones;
 using System.ComponentModel.DataAnnotations;
 
 namespace PIA_BACKEND_MAGG.DTOs.RifasDTO
 {
-    public class RifaCreacionDTO
+    public class RifaPatchDTO
     {
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         [RifaNameFormat]

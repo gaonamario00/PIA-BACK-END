@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using PIA_BACKEND_MAGG.Validaciones;
 using System.ComponentModel.DataAnnotations;
 
 namespace PIA_BACKEND_MAGG.Entidades
@@ -8,7 +7,7 @@ namespace PIA_BACKEND_MAGG.Entidades
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
-        [UserNameFormat]
+        //CREO QUE ESTO NO VA USERNAME
         public string UserName { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public string IdUser { get; set; }

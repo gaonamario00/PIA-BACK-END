@@ -237,9 +237,6 @@ namespace PIA_BACKEND_MAGG.Migrations
                     b.Property<int>("participanteId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("premioId")
-                        .HasColumnType("int");
-
                     b.Property<int>("rifaId")
                         .HasColumnType("int");
 
@@ -249,7 +246,7 @@ namespace PIA_BACKEND_MAGG.Migrations
 
                     b.HasIndex("rifaId");
 
-                    b.ToTable("participanteRifa");
+                    b.ToTable("participantesRifa");
                 });
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Participantes", b =>
@@ -292,7 +289,8 @@ namespace PIA_BACKEND_MAGG.Migrations
 
                     b.Property<string>("descripcion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("disponible")
                         .HasColumnType("bit");
@@ -337,6 +335,32 @@ namespace PIA_BACKEND_MAGG.Migrations
                     b.HasIndex("userId");
 
                     b.ToTable("rifas");
+                });
+
+            modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.TarjetaGanadora", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
+
+                    b.Property<string>("nombreRifa")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("premioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("userId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("TarjetasGanadoras");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -420,16 +444,25 @@ namespace PIA_BACKEND_MAGG.Migrations
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Premio", b =>
                 {
-                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", "rifa")
+                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", null)
                         .WithMany("premios")
                         .HasForeignKey("rifaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("rifa");
                 });
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Rifa", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "user")
+                        .WithMany()
+                        .HasForeignKey("userId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
+                });
+
+            modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.TarjetaGanadora", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "user")
                         .WithMany()

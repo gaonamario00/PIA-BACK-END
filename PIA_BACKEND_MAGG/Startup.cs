@@ -39,6 +39,7 @@ namespace PIA_BACKEND_MAGG
                     In = ParameterLocation.Header
                 });
 
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -55,6 +56,8 @@ namespace PIA_BACKEND_MAGG
                 });
 
             });
+
+           
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -74,6 +77,14 @@ namespace PIA_BACKEND_MAGG
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
                 };
             });
+
+            services.AddCors(opc =>
+            {
+                opc.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("https://www.apirequest.io").AllowAnyMethod().AllowAnyHeader();
+                });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup>? serviceLogger)
@@ -87,6 +98,8 @@ namespace PIA_BACKEND_MAGG
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthentication();
 

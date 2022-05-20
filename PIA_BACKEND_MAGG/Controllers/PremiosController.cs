@@ -32,7 +32,21 @@ namespace PIA_BACKEND_MAGG.Controllers
             return mapper.Map<List<GetPremioDTO>>(premios);
         }
 
-        [HttpGet("{idRifa:int}")]
+        [HttpGet("{idPremio:int}", Name = "consultarPremio")]
+        public async Task<ActionResult<GetPremioDTO>> GetPremioById(int idPremio)
+        {
+            var premio = await context.premios.FirstOrDefaultAsync(premio => premio.Id == idPremio);
+
+            if (premio == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<GetPremioDTO>(premio);
+
+        }
+
+        [HttpGet("Rifa/{idRifa:int}")]
         public async Task<ActionResult<List<GetPremioDTO>>> GetPremiosPorRifa(int idRifa)
         {
             var premios = await context.premios.Where(premio => premio.rifaId == idRifa).ToListAsync();
@@ -49,6 +63,7 @@ namespace PIA_BACKEND_MAGG.Controllers
             var rifa = await context.rifas.Where(rifa => rifa.Id == premioCreacionDTO.rifaId).FirstOrDefaultAsync();
 
             if(rifa == null) { return BadRequest("La rifa ingresada no existe"); }
+            if (rifa.finalizada) return BadRequest("La rifa ingresada ha finalizado");
 
             var premioDTO = mapper.Map<PremioDTO>(premioCreacionDTO);
             premioDTO.disponible = true;
@@ -59,10 +74,17 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             var premio = mapper.Map<Premio>(premioDTO);
 
-            context.Add(premio);
+            premiosRifa.Add(premio);
+            rifa.premios = premiosRifa;
+
+            context.rifas.Update(rifa);
+
+            context.premios.Add(premio);
             await context.SaveChangesAsync();
 
-            return Ok();
+            var getPremioDTO = mapper.Map<GetPremioDTO>(premio);
+
+            return CreatedAtRoute("consultarPremio", new { idPremio = premio.Id }, getPremioDTO);
         }
 
     }

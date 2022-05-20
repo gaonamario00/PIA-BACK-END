@@ -37,29 +37,26 @@ namespace PIA_BACKEND_MAGG.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("Autorizado")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Get()
+        [HttpGet("Prueba")]
+        public async Task<ActionResult> registrar()
         {
-            return Ok("Esta autorizado");
+            return Ok("Funciona CORS");
         }
-        
+
+
         [HttpPost("registrar")]
-        public async Task<IActionResult> registrar(UsuarioCreacionDTO nuevoUSer)
+        public async Task<ActionResult> registrar(UsuarioCreacionDTO nuevoUSer)
         {
 
-            
+            if (!nuevoUSer.Email.Equals(nuevoUSer.EmailConfirmed)) return BadRequest("Los correos no coinciden");
+            if (!nuevoUSer.Password.Equals(nuevoUSer.PasswordConfirmed)) return BadRequest("Las contraseñas no coinciden");
+
             var usuario = new IdentityUser {UserName = nuevoUSer.UserName, Email = nuevoUSer.Email, PhoneNumber = nuevoUSer.PhoneNumber};
             var result = await userManager.CreateAsync(usuario, nuevoUSer.Password);
             var userId = await userManager.GetUserIdAsync(usuario);
 
             if (result.Succeeded)
             {
-                //var user = mapper.Map<Participantes>(nuevoUSer);
-                //user.IdUser = userId;
-
-                //context.Add(user);
-                //await context.SaveChangesAsync();
 
                 var token = await Generate(mapper.Map<loginUsuarioDTO>(nuevoUSer));
                 return Ok("Token: "+token);
