@@ -1,11 +1,54 @@
 {
   "Version": 1,
-  "Hash": "jhbO8w8IJF/jY/22xeTwkKbhfgBciLFn/z/g8n2nLIM=",
+  "Hash": "utNPwyXX7RJOmr8uf+fy+z6LaKcqYU7sfT+vG+cGC6o=",
   "Source": "PIA_BACKEND_MAGG",
   "BasePath": "_content/PIA_BACKEND_MAGG",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "PIA_BACKEND_MAGG\\wwwroot",
+      "Source": "PIA_BACKEND_MAGG",
+      "ContentRoot": "C:\\Users\\gaona\\OneDrive\\Escritorio\\Proyectos\\Visual Studio\\PIA_BACKEND_MAGG\\PIA_BACKEND_MAGG\\wwwroot\\",
+      "BasePath": "_content/PIA_BACKEND_MAGG",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\gaona\\OneDrive\\Escritorio\\Proyectos\\Visual Studio\\PIA_BACKEND_MAGG\\PIA_BACKEND_MAGG\\wwwroot\\Acciones",
+      "SourceId": "PIA_BACKEND_MAGG",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\gaona\\OneDrive\\Escritorio\\Proyectos\\Visual Studio\\PIA_BACKEND_MAGG\\PIA_BACKEND_MAGG\\wwwroot\\",
+      "BasePath": "_content/PIA_BACKEND_MAGG",
+      "RelativePath": "Acciones",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Acciones"
+    },
+    {
+      "Identity": "C:\\Users\\gaona\\OneDrive\\Escritorio\\Proyectos\\Visual Studio\\PIA_BACKEND_MAGG\\PIA_BACKEND_MAGG\\wwwroot\\Ejecuciones",
+      "SourceId": "PIA_BACKEND_MAGG",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\gaona\\OneDrive\\Escritorio\\Proyectos\\Visual Studio\\PIA_BACKEND_MAGG\\PIA_BACKEND_MAGG\\wwwroot\\",
+      "BasePath": "_content/PIA_BACKEND_MAGG",
+      "RelativePath": "Ejecuciones",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Ejecuciones"
+    }
+  ]
 }

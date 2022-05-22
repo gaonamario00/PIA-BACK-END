@@ -7,7 +7,7 @@ namespace PIA_BACKEND_MAGG.DTOs.ParticipanteRifaDTO
     {
         public int id { get; set; }
         public int rifaId { get; set; }
-        public ParticipantesDTO participante { get; set; }
+        public ParticipantesDTO participaciones { get; set; }
         public int NumeroLoteria { get; set; }
         public Boolean ganador { get; set; }
 

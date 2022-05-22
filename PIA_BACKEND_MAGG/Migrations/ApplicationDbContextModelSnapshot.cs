@@ -345,6 +345,9 @@ namespace PIA_BACKEND_MAGG.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
 
+                    b.Property<int>("idRifa")
+                        .HasColumnType("int");
+
                     b.Property<string>("nombreRifa")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -352,11 +355,16 @@ namespace PIA_BACKEND_MAGG.Migrations
                     b.Property<int>("premioId")
                         .HasColumnType("int");
 
+                    b.Property<int>("rifaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("userId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("id");
+
+                    b.HasIndex("rifaId");
 
                     b.HasIndex("userId");
 
@@ -422,15 +430,13 @@ namespace PIA_BACKEND_MAGG.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", "rifa")
+                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", null)
                         .WithMany("participaciones")
                         .HasForeignKey("rifaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("participante");
-
-                    b.Navigation("rifa");
                 });
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Participantes", b =>
@@ -444,11 +450,13 @@ namespace PIA_BACKEND_MAGG.Migrations
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Premio", b =>
                 {
-                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", null)
+                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", "rifa")
                         .WithMany("premios")
                         .HasForeignKey("rifaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("rifa");
                 });
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.Rifa", b =>
@@ -464,11 +472,19 @@ namespace PIA_BACKEND_MAGG.Migrations
 
             modelBuilder.Entity("PIA_BACKEND_MAGG.Entidades.TarjetaGanadora", b =>
                 {
+                    b.HasOne("PIA_BACKEND_MAGG.Entidades.Rifa", "rifa")
+                        .WithMany("tarjetaGanadora")
+                        .HasForeignKey("rifaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "user")
                         .WithMany()
                         .HasForeignKey("userId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("rifa");
 
                     b.Navigation("user");
                 });
@@ -483,6 +499,8 @@ namespace PIA_BACKEND_MAGG.Migrations
                     b.Navigation("participaciones");
 
                     b.Navigation("premios");
+
+                    b.Navigation("tarjetaGanadora");
                 });
 #pragma warning restore 612, 618
         }

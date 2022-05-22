@@ -14,9 +14,6 @@ namespace PIA_BACKEND_MAGG
         //{
         //    base.OnModelCreating(modelBuilder);
 
-        //    modelBuilder.Entity<ParticipanteRifa>()
-        //        .HasKey(part => new { part.participanteId, part.rifaId });
-
         //}
 
         public DbSet<Participantes> participantes { get; set; }

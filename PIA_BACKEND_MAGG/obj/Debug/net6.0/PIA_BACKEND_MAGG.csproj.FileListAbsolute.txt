@@ -72,3 +72,4 @@ C:\Users\gaona\OneDrive\Escritorio\Proyectos\Visual Studio\PIA_BACKEND_MAGG\PIA_
 C:\Users\gaona\OneDrive\Escritorio\Proyectos\Visual Studio\PIA_BACKEND_MAGG\PIA_BACKEND_MAGG\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\gaona\OneDrive\Escritorio\Proyectos\Visual Studio\PIA_BACKEND_MAGG\PIA_BACKEND_MAGG\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\Users\gaona\OneDrive\Escritorio\Proyectos\Visual Studio\PIA_BACKEND_MAGG\PIA_BACKEND_MAGG\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
+C:\Users\gaona\OneDrive\Escritorio\Proyectos\Visual Studio\PIA_BACKEND_MAGG\PIA_BACKEND_MAGG\bin\Debug\net6.0\PIA_BACKEND_MAGG.staticwebassets.runtime.json

@@ -7,7 +7,6 @@ namespace PIA_BACKEND_MAGG.Entidades
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
-        //CREO QUE ESTO NO VA USERNAME
         public string UserName { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public string IdUser { get; set; }

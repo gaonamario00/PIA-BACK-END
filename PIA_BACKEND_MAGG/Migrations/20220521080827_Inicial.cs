@@ -197,27 +197,6 @@ namespace PIA_BACKEND_MAGG.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TarjetasGanadoras",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    nombreRifa = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    userId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    premioId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TarjetasGanadoras", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_TarjetasGanadoras_AspNetUsers_userId",
-                        column: x => x.userId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "participantesRifa",
                 columns: table => new
                 {
@@ -262,6 +241,35 @@ namespace PIA_BACKEND_MAGG.Migrations
                     table.PrimaryKey("PK_premios", x => x.Id);
                     table.ForeignKey(
                         name: "FK_premios_rifas_rifaId",
+                        column: x => x.rifaId,
+                        principalTable: "rifas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TarjetasGanadoras",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    idRifa = table.Column<int>(type: "int", nullable: false),
+                    rifaId = table.Column<int>(type: "int", nullable: false),
+                    nombreRifa = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    userId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    premioId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TarjetasGanadoras", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_TarjetasGanadoras_AspNetUsers_userId",
+                        column: x => x.userId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_TarjetasGanadoras_rifas_rifaId",
                         column: x => x.rifaId,
                         principalTable: "rifas",
                         principalColumn: "Id",
@@ -331,6 +339,11 @@ namespace PIA_BACKEND_MAGG.Migrations
                 name: "IX_rifas_userId",
                 table: "rifas",
                 column: "userId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TarjetasGanadoras_rifaId",
+                table: "TarjetasGanadoras",
+                column: "rifaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TarjetasGanadoras_userId",

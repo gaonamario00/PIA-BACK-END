@@ -18,7 +18,7 @@ namespace PIA_BACKEND_MAGG.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class NumerosController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext dbContext;
         private readonly UserManager<IdentityUser> userManager;
         private readonly IMapper mapper;
 
@@ -27,20 +27,21 @@ namespace PIA_BACKEND_MAGG.Controllers
             UserManager<IdentityUser> userManager,
             IMapper mapper)
         {
-            this.context = context;
+            this.dbContext = context;
             this.userManager = userManager;
             this.mapper = mapper;
         }
 
+        // Obtiene los numeros disponibles por rifa
         [HttpGet("NumerosDisponibles")]
         public async Task<ActionResult<List<int>>> GetNumerosDisponiblesById(int idRifa)
         {
 
-            var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
+            var rifaExiste = await dbContext.rifas.AnyAsync(x => x.Id == idRifa);
 
             if (!rifaExiste) return BadRequest("La rifa ingresada no existe");
 
-            var participacionesPorRifa = await context.participantesRifa.Where(part => part.rifaId == idRifa).ToListAsync();
+            var participacionesPorRifa = await dbContext.participantesRifa.Where(part => part.rifaId == idRifa).ToListAsync();
 
             if (participacionesPorRifa == null) { return BadRequest("No se encontraron participaciones"); }
 
@@ -56,6 +57,7 @@ namespace PIA_BACKEND_MAGG.Controllers
             return numerosDisponibles;
         }
 
+        // Obtiene el estado de un numero de una rifa
         [HttpGet("numero/{numeroLoteria:int}", Name = "consultarNumeroLoteria")]
         public async Task<ActionResult<NumeroDTO>> GetNumeroByRifaId(int idRifa, int numeroLoteria)
         {
@@ -65,11 +67,11 @@ namespace PIA_BACKEND_MAGG.Controllers
                 return BadRequest("El numero de loteria debe de ser de 1 hasta 54");
             }
 
-            var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
+            var rifaExiste = await dbContext.rifas.AnyAsync(x => x.Id == idRifa);
 
             if (!rifaExiste) return BadRequest("La rifa ingresada no existe");
 
-            var number = await context.participantesRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numeroLoteria);
+            var number = await dbContext.participantesRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numeroLoteria);
 
             var numero = new NumeroDTO { numero = numeroLoteria, estado = null };
 
@@ -82,7 +84,7 @@ namespace PIA_BACKEND_MAGG.Controllers
             return numero;
         }
 
-
+        // Permite al usuario participar en una rifa
         [HttpPost("participar/{numero:int}")]
         public async Task<ActionResult> participar(int idRifa, int numero)
         {
@@ -91,12 +93,12 @@ namespace PIA_BACKEND_MAGG.Controllers
                 return BadRequest("El numero a elejir debe de ser de 1 hasta 54");
             }
 
-            var numeroOcupado = await context.participantesRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numero);
+            var numeroOcupado = await dbContext.participantesRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numero);
 
             if (numeroOcupado) { return BadRequest("Numero ocupado"); }
 
             // Obtiene la rifa por id
-            var rifa = await context.rifas.Where(rifa => rifa.Id == idRifa).FirstOrDefaultAsync();
+            var rifa = await dbContext.rifas.Where(rifa => rifa.Id == idRifa).FirstOrDefaultAsync();
 
             if (rifa == null) return BadRequest("La rifa no existe");
             if (rifa.finalizada) return BadRequest("La rifa ya ha sido finalizada");
@@ -109,7 +111,7 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             if (user.Id.Equals(rifa.userId)) { return BadRequest("No puede participar en su propia rifa"); }
 
-            var participanteExiste = await context.participantes.AnyAsync(x => x.IdUser == user.Id);
+            var participanteExiste = await dbContext.participantes.AnyAsync(x => x.IdUser.Equals(user.Id));
 
             if (!participanteExiste)
             {
@@ -122,15 +124,13 @@ namespace PIA_BACKEND_MAGG.Controllers
 
                 var Newparticipante = mapper.Map<Participantes>(nuevoParticipante);
 
-                context.participantes.Add(Newparticipante);
-                await context.SaveChangesAsync();
-
-                return NoContent();
+                dbContext.participantes.Add(Newparticipante);
+                await dbContext.SaveChangesAsync();
 
             }
 
             //obtiene el participante por userId
-            var participante = await context.participantes.Where(part => part.IdUser == user.Id).FirstOrDefaultAsync();
+            var participante = await dbContext.participantes.Where(part => part.IdUser == user.Id).FirstOrDefaultAsync();
 
             //crea la participacion
             var participacionDTO = new participanteRifaDTO
@@ -146,8 +146,8 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             var participacion = mapper.Map<ParticipanteRifa>(participacionDTO);
 
-            context.participantesRifa.Add(participacion);
-            await context.SaveChangesAsync();
+            dbContext.participantesRifa.Add(participacion);
+            await dbContext.SaveChangesAsync();
 
             var numeroDTO = new NumeroDTO { numero = numero, estado = "Elegido" };
 

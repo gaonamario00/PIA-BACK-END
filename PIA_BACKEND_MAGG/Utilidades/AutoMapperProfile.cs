@@ -5,6 +5,7 @@ using PIA_BACKEND_MAGG.DTOs.ParticipanteDTO;
 using PIA_BACKEND_MAGG.DTOs.ParticipanteRifaDTO;
 using PIA_BACKEND_MAGG.DTOs.PremiosDTO;
 using PIA_BACKEND_MAGG.DTOs.RifasDTO;
+using PIA_BACKEND_MAGG.DTOs.TarjetaGanadoraDTO;
 using PIA_BACKEND_MAGG.DTOs.UsuarioDTO;
 using PIA_BACKEND_MAGG.Entidades;
 
@@ -26,11 +27,12 @@ namespace PIA_BACKEND_MAGG.Utilidades
             CreateMap<RifaCreacionDTO, RifaDTO>();
             CreateMap<RifaDTO, Rifa>();
             CreateMap<Rifa, GetRifaDTO>();
+            CreateMap<RifaCreacionDTO, Rifa>();
             CreateMap<Rifa, PremiosDTOConRifas>()
                 .ForMember(rifaDTO => rifaDTO.premios, opc => opc.MapFrom(MapPremiosDTORifa));
             CreateMap<participanteRifaDTO, ParticipanteRifa>();
             CreateMap<ParticipanteRifa, GetParticipanteRifaDTO>()
-                .ForMember(participanteRifa => participanteRifa.participante, opc => opc.MapFrom(MapGetParicipanteRifaDTO));
+                .ForMember(participanteRifa => participanteRifa.participaciones, opc => opc.MapFrom(MapGetParicipanteRifaDTO));
             CreateMap<RifaPatchDTO, Rifa>().ReverseMap();
 
             //Premios
@@ -38,17 +40,38 @@ namespace PIA_BACKEND_MAGG.Utilidades
             CreateMap<PremioDTO, Premio>().ReverseMap();
             CreateMap<Premio, GetPremioDTO>().ReverseMap();
             CreateMap<Premio, PremioDTOGanador>();
-            CreateMap<RifaCreacionDTO, Rifa>();
+            CreateMap<PremioCreacionDTO, Premio>();
+            CreateMap<UpdatePremioDTO, Premio>();
+            CreateMap<PremioPatchDTO, Premio>().ReverseMap();
 
             //TarjetaGanadora
             CreateMap<TarjetaGanadorDTO, TarjetaGanadora>().ReverseMap();
             CreateMap<TarjetaGanadora, TarjetaGanadorDTO>()
                 .ForMember(tarjeta => tarjeta.user, opc => opc.MapFrom(MapTarjetaGanadoraDTO));
+            CreateMap<TarjetaGanadorDTO, GetTarjetaGanadoraDTO>()
+                .ForMember(tarjeta => tarjeta.user, opc => opc.MapFrom(MapGetTarjetaGanadoraDTO));
+        }
+
+        private GetIdentityUserDTO MapGetTarjetaGanadoraDTO(TarjetaGanadorDTO tarjetaGanadorDTO, GetTarjetaGanadoraDTO getTarjetaGanadoraDTO)
+        {
+            var result = new GetIdentityUserDTO();
+
+            if (tarjetaGanadorDTO.user == null) return result;
+
+            result = new GetIdentityUserDTO()
+            {
+                nombre = tarjetaGanadorDTO.user.UserName
+            };
+            return result;
         }
 
         private ParticipantesDTO MapGetParicipanteRifaDTO(ParticipanteRifa participanteRifa, GetParticipanteRifaDTO getParticipanteRifaDTO)
         {
-            var result = new ParticipantesDTO()
+            var result = new ParticipantesDTO();
+
+            if (result == null) return result;
+
+            result = new ParticipantesDTO()
             {
                 nombre = participanteRifa.participante.UserName
             };
@@ -59,7 +82,7 @@ namespace PIA_BACKEND_MAGG.Utilidades
         {
             var result = new List<ParticipantesDTO>();
 
-            if (result == null) return result;
+            if (rifa.participaciones == null) return result;
 
             foreach (var participante in rifa.participaciones)
             {
@@ -73,7 +96,11 @@ namespace PIA_BACKEND_MAGG.Utilidades
 
         private IdentityUserDTO MapTarjetaGanadoraDTO(TarjetaGanadora tarjetaGanadora, TarjetaGanadorDTO tarjeta)
         {
-            var result = new IdentityUserDTO()
+            var result = new IdentityUserDTO();
+
+            if (tarjetaGanadora.user == null) return result;
+
+            result = new IdentityUserDTO()
             {
                 UserName = tarjetaGanadora.user.UserName,
                 Email = tarjetaGanadora.user.Email,

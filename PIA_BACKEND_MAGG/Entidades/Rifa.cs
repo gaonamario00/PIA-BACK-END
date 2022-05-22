@@ -19,5 +19,6 @@ namespace PIA_BACKEND_MAGG.Entidades
         public List<Premio> premios { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public Boolean finalizada { get; set; }
+        public List<TarjetaGanadora> tarjetaGanadora { get; set; }
     }
 }

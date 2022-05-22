@@ -15,7 +15,7 @@ namespace PIA_BACKEND_MAGG.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Administrador")]
     public class ParticipacionesController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext dbContext;
         private readonly UserManager<IdentityUser> userManager;
         private readonly IMapper mapper;
 
@@ -24,15 +24,16 @@ namespace PIA_BACKEND_MAGG.Controllers
             UserManager<IdentityUser> userManager,
             IMapper mapper)
         {
-            this.context = context;
+            this.dbContext = context;
             this.userManager = userManager;
             this.mapper = mapper;
         }
-
+        
+        // Obtiene las participaciones por rifa
         [HttpGet("Rifa/{idRifa:int}")]
         public async Task<ActionResult<GetRifaDTOConParticipantes>> participantesPorRifa(int idRifa)
         {
-            var rifa = await context.rifas
+            var rifa = await dbContext.rifas
                 .Include(rifaDB => rifaDB.participaciones)
                 .ThenInclude(participaciones => participaciones.participante)
                 .FirstOrDefaultAsync(rifaDB => rifaDB.Id == idRifa);
@@ -42,10 +43,11 @@ namespace PIA_BACKEND_MAGG.Controllers
             return mapper.Map<GetRifaDTOConParticipantes>(rifa);
         }
 
+        // Obtiene todas las participaciones
         [HttpGet("ConsultarTodas")]
         public async Task<ActionResult<List<GetParticipanteRifaDTO>>> participaciones()
         {
-            var participacionesDB = await context.participantesRifa
+            var participacionesDB = await dbContext.participantesRifa
                 .Include(parRifDB => parRifDB.participante)
                 .ToListAsync();
 
@@ -54,18 +56,19 @@ namespace PIA_BACKEND_MAGG.Controllers
             return mapper.Map<List<GetParticipanteRifaDTO>>(participacionesDB);
         }
 
-        [HttpDelete("{idRifa:int}")]
+        //Elimina una participacion por rida
+        [HttpDelete("{idParticipacion:int}")]
         public async Task<ActionResult> eliminarParticipacion(int idParticipacion)
         {
-            var exist = await context.participantesRifa.AnyAsync(x => x.id == idParticipacion);
+            var exist = await dbContext.participantesRifa.AnyAsync(x => x.id == idParticipacion);
             if (!exist) return NotFound("No se encontro la participacion");
 
-            context.Remove(new ParticipanteRifa
+            dbContext.Remove(new ParticipanteRifa
             {
                 id = idParticipacion
             });
 
-            await context.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             return Ok();
         }

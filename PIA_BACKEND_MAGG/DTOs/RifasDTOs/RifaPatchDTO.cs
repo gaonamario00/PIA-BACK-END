@@ -9,6 +9,7 @@ namespace PIA_BACKEND_MAGG.DTOs.RifasDTO
         [RifaNameFormat]
         public string Nombre { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
+        [Range(0, 200)]
         public double costo { get; set; }
     }
 }

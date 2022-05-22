@@ -4,12 +4,13 @@ namespace PIA_BACKEND_MAGG.DTOs.PremiosDTO
 {
     public class PremioCreacionDTO : IValidatableObject
     {
-        [Required]
+        [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public string Nombre { get; set; }
-        [Required]
+        [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public string descripcion { get; set; }
-        [Required]
+        [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public int rifaId { get; set; }
+        [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public double valorado { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

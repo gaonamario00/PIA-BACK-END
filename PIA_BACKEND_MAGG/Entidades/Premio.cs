@@ -15,6 +15,7 @@ namespace PIA_BACKEND_MAGG.Entidades
         public Boolean disponible { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public int rifaId { get; set; }
+        public Rifa rifa { get; set; }
         [Required(ErrorMessage = "El campo de {0} es obligatorio")]
         public int orden { get; set; }
         [NotMapped]

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PIA_BACKEND_MAGG.Filtros;
+using PIA_BACKEND_MAGG.Servicios;
+using PIA_BACKEND_MAGG.Utilidades;
 using System.Text;
 
 namespace PIA_BACKEND_MAGG
@@ -20,7 +23,10 @@ namespace PIA_BACKEND_MAGG
         {
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
-            services.AddControllers().AddJsonOptions(x =>
+            services.AddControllers(opc =>
+            {
+                opc.Filters.Add(typeof(FiltroDeException));
+            }).AddJsonOptions(x =>
             x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles).AddNewtonsoftJson();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -57,7 +63,10 @@ namespace PIA_BACKEND_MAGG
 
             });
 
-           
+            services.AddTransient<FiltroDeAccion>();
+            services.AddResponseCaching();
+            services.AddSingleton<ServiceSingleton>();
+            services.AddHostedService<hostedServicio>();
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -99,7 +108,10 @@ namespace PIA_BACKEND_MAGG
 
             app.UseRouting();
 
+            app.UseResponseCaching();
+
             app.UseCors();
+
 
             app.UseAuthentication();
 

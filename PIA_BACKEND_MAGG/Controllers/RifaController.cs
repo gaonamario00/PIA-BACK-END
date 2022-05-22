@@ -6,10 +6,9 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PIA_BACKEND_MAGG.DTOs;
-using PIA_BACKEND_MAGG.DTOs.ParticipanteRifaDTO;
 using PIA_BACKEND_MAGG.DTOs.RifasDTO;
 using PIA_BACKEND_MAGG.Entidades;
-using PIA_BACKEND_MAGG.Utilidades;
+using PIA_BACKEND_MAGG.Servicios;
 
 namespace PIA_BACKEND_MAGG.Controllers
 {
@@ -18,133 +17,85 @@ namespace PIA_BACKEND_MAGG.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class RifaController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext dbContext;
         private readonly UserManager<IdentityUser> userManager;
         private readonly IMapper mapper;
+        private readonly ILogger<RifaController> logger;
 
         public RifaController(
             ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<RifaController> logger)
         {
-            this.context = context;
+            this.dbContext = context;
             this.userManager = userManager;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
-
+        // Obtiene todas las rifas
         [HttpGet("ConsultarTodas")]
         public async Task<ActionResult<List<GetRifaDTO>>> GetAll()
         {
-            var rifas = await context.rifas.ToListAsync();
-
+            var rifas = await dbContext.rifas.ToListAsync();
             return mapper.Map<List<GetRifaDTO>>(rifas);
-
         }
 
+        //Obtiene todas las rifas con la propiedad finalizada = false.
         [HttpGet("ConsultarVigentes")]
         public async Task<ActionResult<List<GetRifaDTO>>> GetAllVigentes()
         {
-            var rifas = await context.rifas.Where(state => state.finalizada == false).ToListAsync();
-
-            if (rifas.Count == 0) BadRequest("No hay rifas actualmente");
-
+            var rifas = await dbContext.rifas.Where(state => state.finalizada == false).ToListAsync();
             return mapper.Map<List<GetRifaDTO>>(rifas);
-
         }
 
-        //Modificar este endpoint para usar INCLUDE y THEINCLUDE
+        //Obtiene una rifa por id con sus premios
         [HttpGet("{idRifa:int}", Name = "consultarRifa")]
         public async Task<ActionResult<PremiosDTOConRifas>> GetById(int idRifa)
         {
-            var rifa = await context.rifas.
+            //Obtiene la rifa de la DB con sis premios
+            var rifa = await dbContext.rifas.
                 Include(rifaDB => rifaDB.premios)
                 .FirstOrDefaultAsync(x => x.Id == idRifa);
 
-            if (rifa == null) return BadRequest("La rifa ingresada no existe");
+            if (rifa == null) return NotFound("La rifa ingresada no se encontro");
 
             return mapper.Map<PremiosDTOConRifas>(rifa);
 
         }
 
+        //Obtiene las rifas que contengan en su nombre la string enviada por parametro
         [HttpGet("{nombre}")]
         public async Task<ActionResult<List<GetRifaDTO>>> GetByNombre(string nombre)
         {
-            var rifas = await context.rifas.Where(x => x.Nombre.Contains(nombre)).ToListAsync();
+            var rifas = await dbContext.rifas.Where(x => x.Nombre.Contains(nombre)).ToListAsync();
 
-            if (rifas.Count == 0) return BadRequest("La rifa ingresada no existe");
+            if (rifas.Count == 0) return NotFound("No se encontraron resultados");
 
             return mapper.Map<List<GetRifaDTO>>(rifas);
 
         }
 
-        //[HttpGet("{idRifa}/NumerosDisponibles")]
-        //public async Task<ActionResult<List<int>>> GetNumerosDisponiblesById(int idRifa)
-        //{
-
-        //    var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
-
-        //    if(!rifaExiste) return BadRequest("La rifa ingresada no existe");
-
-        //    var participacionesPorRifa = await context.participantesRifa.Where(part => part.rifaId == idRifa).ToListAsync();
-
-        //    if (participacionesPorRifa == null) { return BadRequest("No se encontraron participaciones"); }
-
-        //    List<int> numerosOcupados = new  List<int>();
-
-        //    foreach (var p in participacionesPorRifa)
-        //    {
-        //        numerosOcupados.Add(p.NumeroLoteria);
-        //    }
-
-        //    var numerosDisponibles = NumerosRifaConstantes.NumerosRifa.Except(numerosOcupados).ToList();
-
-        //    return numerosDisponibles;
-        //}
-
-        //[HttpGet("{idRifa}/{numeroLoteria}")]
-        //public async Task<ActionResult<string>> GetNumeroByRifaId(int idRifa, int numeroLoteria)
-        //{
-
-        //    if (numeroLoteria < 1 || numeroLoteria > 54)
-        //    {
-        //        return BadRequest("El numero de loteria debe de ser de 1 hasta 54");
-        //    }
-
-        //    var rifaExiste = await context.rifas.AnyAsync(x => x.Id == idRifa);
-
-        //    if (!rifaExiste) return BadRequest("La rifa ingresada no existe");
-
-        //    var number = await context.participantesRifa.AnyAsync(part => part.rifaId == idRifa && part.NumeroLoteria == numeroLoteria);
-
-        //    //var numero = new NumeroDTO { number = numeroLoteria, estado = null };
-
-        //    string estado = "";
-
-        //    if (number)
-        //    {
-        //        estado = "Ocupado";
-        //    }else estado = "Disponible";
-
-        //    return estado;
-        //}
-
+        //Agrega una rifa
         [HttpPost("Agregar")]
         [Authorize(Policy = "Administrador")]
-        public async Task<IActionResult> Post(RifaCreacionDTO rifaCreacionDTO)
+        public async Task<ActionResult> Post([FromBody] RifaCreacionDTO rifaCreacionDTO)
         {
-
-            var existeRifa = await context.rifas.AnyAsync(rifa => rifa.Nombre == rifaCreacionDTO.Nombre && rifa.finalizada == false);
+            //Verifica si existe una rifa con el mismo nombre
+            var existeRifa = await dbContext.rifas.AnyAsync(rifa => rifa.Nombre.Equals(rifaCreacionDTO.Nombre) && rifa.finalizada == false);
             if (existeRifa)
             {
                 return BadRequest("Ya hay una rifa con ese nombre vigente");
             }
 
+            //Obtiene los datos del usuario
             var userNameClaim = HttpContext.User.Claims.Where(claim => claim.Type == "UserName").FirstOrDefault();
             var userName = userNameClaim.Value;
 
             var user = await userManager.FindByNameAsync(userName);
 
+            //Setea valores de la rifa
             var rifaDTO = mapper.Map<RifaDTO>(rifaCreacionDTO);
             rifaDTO.userId = user.Id;
             rifaDTO.user = user;
@@ -152,19 +103,24 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             var rifa = mapper.Map<Rifa>(rifaDTO);
 
-            context.Add(rifa);
-            await context.SaveChangesAsync();
-
+            //La agrega a la DB
+            dbContext.Add(rifa);
+            await dbContext.SaveChangesAsync();
             var getRifaDTO = mapper.Map<GetRifaDTO>(rifa);
+
+            logger.LogInformation("Rifa Agregada");
+            EscribirEnArchivoMsg.DoWork("Se ha agregado una rifa", "Acciones");
 
             return CreatedAtRoute("consultarRifa", new { idRifa = getRifaDTO.Id }, getRifaDTO);
         }
 
+        //Actualiza una rifa
         [HttpPut("{idRifa:int}")]
         [Authorize(Policy = "Administrador")]
         public async Task<ActionResult> actualizarRifa(RifaCreacionDTO rifaCreacionDTO, int idRifa)
         {
-            var rifaDB = await context.rifas
+            // Obtiene la rifa de la DB con user, participaciones y premios
+            var rifaDB = await dbContext.rifas
                 .Include(rifa => rifa.user)
                 .Include(rifa => rifa.participaciones)
                 .Include(rifa => rifa.premios)
@@ -172,20 +128,26 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             if (rifaDB == null) return NotFound("No se encontro la rifa");
 
+            //Actualiza el registro
             rifaDB = mapper.Map(rifaCreacionDTO, rifaDB);
 
-            context.Update(rifaDB);
-            await context.SaveChangesAsync();
+            dbContext.Update(rifaDB);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Rifa con id " + idRifa + " actualizada");
+            EscribirEnArchivoMsg.DoWork("Rifa con id " + idRifa + " actualizada", "Acciones");
+
             return NoContent();
         }
 
+        //Parchea una rifa de la DB
         [HttpPatch("{idRifa:int}")]
         [Authorize(Policy = "Administrador")]
         public async Task<ActionResult> Patch(int idRifa, JsonPatchDocument patchDocument)
         {
             if (patchDocument == null) return BadRequest();
 
-            var rifaDB = await context.rifas.FirstOrDefaultAsync(rifa => rifa.Id == idRifa);
+            var rifaDB = await dbContext.rifas.FirstOrDefaultAsync(rifa => rifa.Id == idRifa);
 
             if (rifaDB == null) return NotFound();
 
@@ -199,24 +161,34 @@ namespace PIA_BACKEND_MAGG.Controllers
 
             mapper.Map(rifaDTO, rifaDB);
 
-            await context.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Rifa con id "+idRifa+" actualizada desde patch");
+            EscribirEnArchivoMsg.DoWork("Rifa con id " + idRifa + " actualizada desde patch", "Acciones");
+
             return NoContent();
 
         }
 
+        // Elimina una rifa - elimina tambien premios, participaciones y tarjetas relacionadas.
         [HttpDelete("{idRifa:int}")]
         [Authorize(Policy = "Administrador")]
         public async Task<ActionResult> EliminarRifa(int idRifa)
         {
-            var exist = await context.rifas.AnyAsync(x => x.Id == idRifa);
+            var exist = await dbContext.rifas.AnyAsync(x => x.Id == idRifa);
             if (!exist) return NotFound("No se encontro la rifa");
 
-            context.Remove(new Rifa
+            logger.LogWarning("La rifa con id " + idRifa + " sera eliminada");
+
+            dbContext.Remove(new Rifa
             {
                 Id = idRifa
             });
 
-            await context.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Rifa con id " + idRifa + " eliminada");
+            EscribirEnArchivoMsg.DoWork("Rifa con id " + idRifa + " eliminada", "Acciones");
 
             return Ok();
         }
